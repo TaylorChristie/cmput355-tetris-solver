@@ -73,14 +73,15 @@ def run(field, figure, width, height):
                 y += 1
             y -= 1
             simulated = simulate_placement(field, figure, x, y)
-            print('proposed placement|x='+str(x)+',y='+str(y))
-            [print(r) for r in simulated]
             if best == None or y > best[2]:
-                best = [x, i, y]
+                best = [x, i, y, simulated]
     
     figure.rotation = 0
     off = best[0]
     rotates = best[1]
+    print('proposed placement|x='+str(off)+',y='+str(best[2]),'rotates='+str(best[1]))
+    [print(r) for r in best[3]]
+
     events = [Event(pygame.KEYDOWN, pygame.K_UP) for x in range(rotates)]
     if off == 0:
         events = events + [Event(pygame.KEYDOWN, pygame.K_LEFT) for x in range(10)]
