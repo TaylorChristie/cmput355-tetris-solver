@@ -27,7 +27,6 @@ def calculate_intersection(field, x, y, height, width, image):
                     intersection = True
     return intersection
 
-# TODO maybe just return None if it runs into an index error
 def simulate_placement(field, figure, x, y):
     simulated = deepcopy(field)
     for i in range(4):
@@ -70,19 +69,33 @@ def run(field, figure, width, height):
         print('image:', figure.image())
         print('width:', offset)
         # TODO not placing in the last column (index 9)
-        for x in range(width):
+        for x in range(width+1):
             y = 0
             while not calculate_intersection(field, x, y, height, width, figure.image()):
                 y += 1
             y -= 1
             simulated = simulate_placement(field, figure, x, y)
-            if simulated and (best == None or y > best[2]):
-                best = [x, i, y, simulated]
+            
+
+            if simulated:
+                holes = 0
+                for c in range(len(simulated[0])):
+                    initial = False
+                    for r in range(len(simulated)):
+                        if simulated[r][c]:
+                            initial = True
+                        elif initial:
+                            holes += 1
+
+            score = holes + (len(field)-y)
+
+            if simulated and (best == None or score < best[5]):
+                best = [x, i, y, simulated, holes, score]
 
     figure.rotate()
     off = best[0]
     rotates = best[1]
-    print('proposed placement|x='+str(off)+'|rotates='+str(best[1]))
+    print('proposed placement|x='+str(off)+'|rotates='+str(best[1])+'|holes='+str(best[4])+'|score='+str(best[5]))
     [print(r) for r in best[3]]
 
     # translates offset and rotates into in game moves for feedback

@@ -1,7 +1,6 @@
 ## Question Responses
 1. tsc2
-2. 
-    - Taylor Christie 1528468 tsc2
+2. Taylor Christie 1528468 tsc2
 3. Well, I did the entire project myself with no external help (other than some research and a previously programmed version of the game so I didn't have to write it myself). I feel like I performed to my expectations in this project :)
 4. https://github.com/TaylorChristie/cmput355-tetris-solver
 5. The game I decided to write a solver for is tetris. Basically, the object of the game is to stack 7 different types of randomly generated blocks together to obtain points and stay alive as long as possible.
@@ -34,3 +33,25 @@ I've also read a bit about machine learning theory and if I want to go down the 
 
 
 ### Entry 4
+I managed to fix my regression bug so I can actually fill the last column, so the gameplay has improved slightly however without any attention to the filling of holes the gameplay doesn't last very long. 
+
+I am now implementing the empty hole heuristic as part of the calculation for the "best" block placement. I know I will have to weight the empty hole and lowest placement, because technically I could get 4 `I` blocks in a row and lose the game instantly. 
+
+I think I will basically do a "lowest score is best" calculation where height is now `total height - new height` and holes is simple the number of holes created on the entire board if the piece is placed in a certain position. I'll then add the two numbers together (equal weighing) and select the placement with the lowest combined score. 
+
+I'm not sure if this will be the best approach, but it definitely improved the score and longevity comparitively. There are still issues where it doesn't clear blocks when it gets high since it doesn't want to cover a huge hole, but it will actually kill itself due to rather failing than filling a hole, so maybe equal weighing is not the best solution. 
+
+I'm thinking about adding some calculations to do the following
+- the lower the board, the more focus on not creating holes and less focus on height
+- the higher the board, the more focus on clearing complete rows, more focus on less height
+
+This means I should probably add a heuristic on simulating on how many rows will be cleared if placing a block in a certain position - which is pretty easy to do. 
+
+I'm getting to the point that I've got the base gameplay figured out for the bot, and it needs to be tweaked. I'm really thinking about trying to add some genentic machine learning algorithms to find the perfect weighted ratio of the hueristics, but we'll see if I can tweak the scoring formula a bit more before I move onto that point.
+
+
+### Entry 5
+
+
+
+
