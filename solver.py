@@ -1,6 +1,7 @@
 import pygame
 import time
 from copy import deepcopy
+import math
 
 # Based off of https://levelup.gitconnected.com/tetris-ai-in-python-bd194d6326ae
 
@@ -27,6 +28,7 @@ def calculate_intersection(field, x, y, height, width, image):
                     intersection = True
     return intersection
 
+
 def simulate_placement(field, figure, x, y):
     simulated = deepcopy(field)
     for i in range(4):
@@ -38,25 +40,18 @@ def simulate_placement(field, figure, x, y):
                     return None
     return simulated
 
-# TODO not working for S/Z blocks
-def calculate_figure_width(figure):
-    # 0  1  2  3
-    # 4  5  6  7
-    # 8  9  10 11
-    # 12 13 14 15
-    width = 0
-    for i in range(4):
-        r_width = 0
-        for j in range(4):
-            if i * 4 + j in figure.image():
-                r_width += 1
-        if r_width > width:
-            width = r_width
-    return width
-
 counter = 0
+VECTORS = {
+    'cleared': 5,
+    'holes': -5,
+    'max_height': -3,
+    'roughness': -0.5
+}
+
+
 def run(field, figure, width, height):
     global counter
+    global VECTORS
     counter += 1
     if counter < 3:
         return []
@@ -65,19 +60,22 @@ def run(field, figure, width, height):
     best = None
     for i in range(len(figure.figures[figure.type])):
         figure.rotate()
-        offset = calculate_figure_width(figure)
-        print('image:', figure.image())
-        print('width:', offset)
-        # TODO not placing in the last column (index 9)
         for x in range(width+1):
             y = 0
             while not calculate_intersection(field, x, y, height, width, figure.image()):
                 y += 1
             y -= 1
             simulated = simulate_placement(field, figure, x, y)
-            
 
             if simulated:
+
+                # calculate roughness (sum of height differences between adjacent columns)
+                heights = []
+                for c in range(len(simulated[0])):
+                    for r in range(len(simulated)):
+                        if simulated[r][c]:
+                            heights.append(len(field)-r)
+                            break
                 holes = 0
                 for c in range(len(simulated[0])):
                     initial = False
@@ -86,17 +84,31 @@ def run(field, figure, width, height):
                             initial = True
                         elif initial:
                             holes += 1
+                cleared = 0
+                max_height = max(heights)
+                
+                roughness = 0
+                for a in range(len(heights)):
+                    if a > 0:
+                        roughness += abs(heights[a-1] - heights[a])
+                    if a < len(heights) - 1:
+                        roughness += abs(heights[a+1] - heights[a])
+                for r in simulated:
+                    if all(r):
+                        cleared += 1
 
-            score = holes + (len(field)-y)
+            # max height of the board?
+            score = VECTORS['holes'] * holes + VECTORS['max_height'] * max_height + VECTORS['cleared'] * cleared + VECTORS['roughness'] * roughness
 
-            if simulated and (best == None or score < best[5]):
-                best = [x, i, y, simulated, holes, score]
+            if simulated and (best == None or score > best[5]):
+                best = [x, i, y, simulated, holes, score, cleared, max_height, roughness, heights]
 
     figure.rotate()
     off = best[0]
     rotates = best[1]
-    print('proposed placement|x='+str(off)+'|rotates='+str(best[1])+'|holes='+str(best[4])+'|score='+str(best[5]))
-    [print(r) for r in best[3]]
+    print('proposed placement|x='+str(off)+'|rotates='+str(best[1])+'|holes='+str(
+        best[4])+'|cleared='+str(best[6])+'|max_height='+str(best[7])+'|roughness='+str(best[8])+'|heights='+str(best[9])+'|score='+str(best[5]))
+    # time.sleep(0.1)
 
     # translates offset and rotates into in game moves for feedback
     events = [Event(pygame.KEYDOWN, pygame.K_UP) for x in range(rotates)]

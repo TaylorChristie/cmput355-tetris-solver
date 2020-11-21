@@ -86,6 +86,7 @@ class Tetris:
 
     def new_figure(self):
         self.figure = Figure(0, 0)
+        self.score += 1
 
     def intersects(self):
         return calculate_intersection(self.field, self.figure.x, self.figure.y, self.height, self.width, self.figure.image())
@@ -102,7 +103,7 @@ class Tetris:
                 for i1 in range(i, 1, -1):
                     for j in range(self.width):
                         self.field[i1][j] = self.field[i1 - 1][j]
-        self.score += lines ** 2
+        self.score += 200 * (lines ** 2)
 
     def go_space(self):
         while not self.intersects():
@@ -156,7 +157,7 @@ pygame.display.set_caption("Tetris")
 # Loop until the user clicks the close button.
 done = False
 clock = pygame.time.Clock()
-fps = 5
+fps = 100
 game = Tetris(20, 10)
 counter = 0
 
@@ -225,6 +226,9 @@ while not done:
     if game.state == "gameover":
         screen.blit(text_game_over, [20, 200])
         screen.blit(text_game_over1, [25, 265])
+        print('final score:',game.score)
+        print('blocks placed:', counter)
+        done = True
 
     pygame.display.flip()
     clock.tick(fps)
